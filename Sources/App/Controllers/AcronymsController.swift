@@ -18,6 +18,12 @@ struct AcronymsController: RouteCollection {
             acronym.put(use: update)
             acronym.delete(use: delete)
             acronym.get("user", use: getUser)
+            
+            acronym.group("categories") { categories in
+                categories.get(use: getCategories)
+                categories.post(":categoryID", use: addCategories)
+                categories.delete(":categoryID", use: removeCategories)
+            }
         }
         acronyms.get("search", use: search)
         acronyms.get("first", use: first)
@@ -36,17 +42,11 @@ struct AcronymsController: RouteCollection {
     }
     
     func show(req: Request) async throws -> Acronym {
-        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
-        return acronym
+        try await Acronym.for(req)
     }
     
     func update(req: Request) async throws -> Acronym {
-        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
-        
+        let acronym = try await Acronym.for(req)
         let receivedAcronym = try req.content.decode(CreateAcronymData.self)
         acronym.short = receivedAcronym.short
         acronym.long = receivedAcronym.long
@@ -56,9 +56,7 @@ struct AcronymsController: RouteCollection {
     }
     
     func delete(req: Request) async throws -> HTTPStatus {
-        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let acronym = try await Acronym.for(req)
         try await acronym.delete(on: req.db)
         return .noContent
     }
@@ -85,10 +83,27 @@ struct AcronymsController: RouteCollection {
     }
     
     func getUser(req: Request) async throws -> User {
-        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let acronym = try await Acronym.for(req)
         return try await acronym.$user.get(on: req.db)
+    }
+    
+    func addCategories(req: Request) async throws -> HTTPStatus {
+        async let acronym = try Acronym.for(req)
+        async let category = try Category.for(req)
+        try await acronym.$categories.attach(category, on: req.db)
+        return .created
+    }
+    
+    func getCategories(req: Request) async throws -> [Category] {
+        let acronym = try await Acronym.for(req)
+        return try await acronym.$categories.query(on: req.db).all()
+    }
+    
+    func removeCategories(req: Request) async throws -> HTTPStatus {
+        async let acronym = try Acronym.for(req)
+        async let category = try Category.for(req)
+        try await acronym.$categories.detach(category, on: req.db)
+        return .noContent
     }
 }
 
@@ -96,4 +111,13 @@ struct CreateAcronymData: Content {
     let short: String
     let long: String
     let userID: UUID
+}
+
+extension Acronym {
+    static func `for`(_ req: Request, on db: Database? = nil) async throws -> Acronym {
+        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: db ?? req.db) else {
+            throw Abort(.notFound)
+        }
+        return acronym
+    }
 }
