@@ -11,4 +11,5 @@ func routes(_ app: Application) throws {
     }
     
     try app.register(collection: AcronymsController())
+    try app.register(collection: UsersController())
 }

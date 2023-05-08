@@ -19,6 +19,7 @@ public func configure(_ app: Application) async throws {
         tlsConfiguration: tls
     ), as: .mysql)
     
+    app.migrations.add(CreateUser())
     app.migrations.add(CreateAcronym())
     app.logger.logLevel = .debug
     try await app.autoMigrate()

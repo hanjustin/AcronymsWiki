@@ -17,6 +17,7 @@ struct AcronymsController: RouteCollection {
             acronym.get(use: show)
             acronym.put(use: update)
             acronym.delete(use: delete)
+            acronym.get("user", use: getUser)
         }
         acronyms.get("search", use: search)
         acronyms.get("first", use: first)
@@ -24,7 +25,8 @@ struct AcronymsController: RouteCollection {
     }
     
     func create(req: Request) async throws -> Acronym {
-        let acronym = try req.content.decode(Acronym.self)
+        let data = try req.content.decode(CreateAcronymData.self)
+        let acronym = Acronym(short: data.short, long: data.long, userID: data.userID)
         try await acronym.save(on: req.db)
         return acronym
     }
@@ -45,9 +47,10 @@ struct AcronymsController: RouteCollection {
             throw Abort(.notFound)
         }
         
-        let receivedAcronym = try req.content.decode(Acronym.self)
+        let receivedAcronym = try req.content.decode(CreateAcronymData.self)
         acronym.short = receivedAcronym.short
         acronym.long = receivedAcronym.long
+        acronym.$user.id = receivedAcronym.userID
         try await acronym.save(on: req.db)
         return acronym
     }
@@ -80,4 +83,17 @@ struct AcronymsController: RouteCollection {
     func sorted(req: Request) async throws -> [Acronym] {
         try await Acronym.query(on: req.db).sort(\.$short, .ascending).all()
     }
+    
+    func getUser(req: Request) async throws -> User {
+        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: req.db) else {
+            throw Abort(.notFound)
+        }
+        return try await acronym.$user.get(on: req.db)
+    }
+}
+
+struct CreateAcronymData: Content {
+    let short: String
+    let long: String
+    let userID: UUID
 }
