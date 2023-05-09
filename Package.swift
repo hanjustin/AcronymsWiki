@@ -10,14 +10,14 @@ let package = Package(
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.76.0"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.8.0"),
-        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.6.2"),
+        .package(url: "https://github.com/vapor/fluent-mysql-driver.git", from: "4.0.0"),
     ],
     targets: [
         .executableTarget(
             name: "App",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
-                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "FluentMySQLDriver", package: "fluent-mysql-driver"),
                 .product(name: "Vapor", package: "vapor")
             ],
             swiftSettings: [
