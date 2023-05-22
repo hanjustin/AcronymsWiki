@@ -1,0 +1,35 @@
+name: CI Continuous Integration Pipeline
+
+on: push
+
+env:
+  LOG_LEVEL: info
+  DATABASE_USERNAME: vapor_username
+  DATABASE_PASSWORD: vapor_password
+  DATABASE_NAME: vapor-test
+  DATABASE_HOST: mysql
+  DATABASE_PORT: 32574
+
+jobs:
+  testVaporApp:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: vapor-test
+          MYSQL_USER: vapor_username
+          MYSQL_PASSWORD: vapor_password
+          MYSQL_ROOT_PASSWORD: vapor_password
+          MYSQL_TCP_PORT: 32574
+        ports:
+          - 32574:32574
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    container: swift:5.8.0-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: run tests
+        run: swift test
+        
