@@ -30,18 +30,17 @@ struct CategoriesController: RouteCollection {
     }
 
     func show(req: Request) async throws -> Category {
-        let category = try await Category.for(req)
-        return category
+        try await Category.searchFrom(req)
     }
 
     func getAcronyms(_ req: Request) async throws -> [Acronym] {
-        let category = try await Category.for(req)
+        let category = try await Category.searchFrom(req)
         return try await category.$acronyms.get(on: req.db)
     }
 }
 
 extension Category {
-    static func `for`(_ req: Request, on db: Database? = nil) async throws -> Category {
+    static func searchFrom(_ req: Request, on db: Database? = nil) async throws -> Category {
         guard let category = try await Category.find(req.parameters.get("categoryID"), on: db ?? req.db) else {
             throw Abort(.notFound)
         }
