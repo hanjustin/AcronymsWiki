@@ -72,10 +72,7 @@ struct AcronymsController: RouteCollection {
     }
     
     func first(req: Request) async throws -> Acronym {
-        guard let first = try await Acronym.query(on: req.db).first() else {
-            throw Abort(.badRequest)
-        }
-        return first
+        try await Acronym.query(on: req.db).first() ?? Abort(.badRequest)
     }
     
     func sorted(req: Request) async throws -> [Acronym] {
@@ -115,9 +112,6 @@ struct CreateAcronymData: Content {
 
 extension Acronym {
     static func searchFrom(_ req: Request, on db: Database? = nil) async throws -> Acronym {
-        guard let acronym = try await Acronym.find(req.parameters.get("acronymID"), on: db ?? req.db) else {
-            throw Abort(.notFound)
-        }
-        return acronym
+        try await Acronym.find(req.parameters.get("acronymID"), on: db ?? req.db) ?? Abort(.notFound)
     }
 }

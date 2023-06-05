@@ -41,9 +41,6 @@ struct CategoriesController: RouteCollection {
 
 extension Category {
     static func searchFrom(_ req: Request, on db: Database? = nil) async throws -> Category {
-        guard let category = try await Category.find(req.parameters.get("categoryID"), on: db ?? req.db) else {
-            throw Abort(.notFound)
-        }
-        return category
+        try await Category.find(req.parameters.get("categoryID"), on: db ?? req.db) ?? Abort(.notFound)
     }
 }

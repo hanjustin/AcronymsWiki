@@ -29,10 +29,7 @@ struct UsersController: RouteCollection {
     }
 
     func show(req: Request) async throws -> User {
-        guard let user = try await User.find(req.parameters.get("userID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
-        return user
+        try await User.find(req.parameters.get("userID"), on: req.db) ?? Abort(.notFound)
     }
 
     func getAcronyms(req: Request) async throws -> [Acronym] {
