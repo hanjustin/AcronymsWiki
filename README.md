@@ -249,14 +249,17 @@ docker run --name mysql-testDB \
             </td>
         </tr>
         <tr>
-            <td valign="top"><code><b>POST</b> /api/acronyms/{:acronymID}/categories/{:categoryID}</code></td>
-            <td>
+            <td colspan="2"><code><b>POST</b> /api/acronyms/{:acronymID}/categories/{:categoryID}</code>
+            <br>
                 <code>201</code>
+            </td>
         </tr>
         <tr>
-            <td valign="top"><code><b>DELETE</b> /api/acronyms/{:acronymID}/categories/{:categoryID}</code></td>
-            <td>
-                <code>204</code>
+            <td colspan="2">
+              <code><b>DELETE</b> /api/acronyms/{:acronymID}/categories/{:categoryID}</code>
+              <br>
+              <code>204</code>
+            </td>
         </tr>
     </tbody>
 </table>
